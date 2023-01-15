@@ -1,20 +1,11 @@
 package com.example.google_map_app.map
 
-import android.Manifest
-import android.annotation.TargetApi
-import android.app.PendingIntent
-import android.content.Intent
-import android.content.IntentSender
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.example.google_map_app.R
 import com.example.google_map_app.databinding.ActivityMapsBinding
@@ -22,19 +13,20 @@ import com.example.google_map_app.map.repository.MapRepository
 import com.example.google_map_app.map.utils.MapViewModelFactory
 import com.example.google_map_app.map.viewmodel.MapViewModel
 import com.example.google_map_app.model.GeoModel
-import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.*
+import com.example.google_map_app.util.LocationInfo
+import com.example.google_map_app.util.LocationInfo.calculateDistance
+import com.google.android.gms.location.Geofence
+import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.gson.Gson
 import java.util.*
 
 
-
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
-    //123
     private var geofenceArea: Circle? = null
     private var myLocationMarker: Marker? = null
     private lateinit var mMap: GoogleMap
@@ -49,7 +41,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     var flag = -1
     var geoStatus = ArrayList<GeoModel>()
 
-    // 12
+    // 1
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMapsBinding.inflate(layoutInflater)
@@ -126,32 +118,34 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         viewModel.let {
             it.latlong.observe(this@MapsActivity) {
                 focusToMyLocation(it)
-                if (calculateDistance(it, geofence) < 100) {
+                if (it.calculateDistance(geofence) < 100) {
                     if (flag == -1) {
-                        Toast.makeText(this, "YOU ENTER IN GEOFENCE", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "you are inside in geofence area..", Toast.LENGTH_LONG).show()
                         flag = 0
                         geoStatus.apply {
-                            this.add(0, GeoModel(geofenceArea?.tag.toString(), System.currentTimeMillis()))
+                          //  this.add(0, GeoModel(geofenceArea?.tag.toString(), System.currentTimeMillis()))
+                            Log.d("systemMsg110",geoStatus.getOrNull(0)?.geofenceTag.toString()+ " " + System.currentTimeMillis())
+                            this.add(0, GeoModel(geofenceArea?.tag.toString(),System.currentTimeMillis()))
                         }
                     }
                 } else {
                     if (flag == 0) {
-                        Toast.makeText(this, "YOU EXIT IN GEOFENCE", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "you are outside in geofence area..", Toast.LENGTH_LONG).show()
                         flag = -1
                         geoStatus.apply {
-                            /*val model =    GeoModel(this.getOrNull(0)?.geofenceTag, this.getOrNull(0)?.enterTimeOfArea ?: 0,
-                               System.currentTimeMillis(),
-                               getTimeDifferce(this.getOrNull(0)))
-                               this.add(0,model)*/
-
-                            val model = GeoModel(this.getOrNull(0)?.geofenceTag,
+                            /*val model = GeoModel(this.getOrNull(0)?.geofenceTag,
                                 this.getOrNull(0)?.exitTimeOfArea?:0,
                                 System.currentTimeMillis(),getTimeDifferce(this.getOrNull(0)))
+                            this.add(model)*/
+                            Log.d("systemMsg111",geoStatus.getOrNull(0)?.geofenceTag.toString()+ " " + "${LocationInfo.getGeofenceEnterExitTime().toString()}")
+                            val model = GeoModel(this.getOrNull(0)?.geofenceTag,
+                            this.getOrNull(0)?.exitTimeOfArea?:0, System.currentTimeMillis(),
+                            getTimeDifferce(this.getOrNull(0)))
                             this.add(model)
 
                         }
 
-                        Log.e("View All Details",geoStatus.getOrNull(0)?.geofenceTag.toString()+"   "+geoStatus.getOrNull(0)?.spendTimeInArea)
+                        viewModel.saveLocationData( Gson().toJson(geoStatus))
                     }
                 }
             }
@@ -194,14 +188,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    fun calculateDistance(startLocation: LatLng, endLocation: LatLng): Double {
-        val startPoint = Location("locationA")
-        startPoint.latitude = startLocation.latitude
-        startPoint.longitude = startLocation.longitude
-        val endPoint = Location("locationB")
-        endPoint.latitude = endLocation.latitude
-        endPoint.longitude = endLocation.longitude
-        return startPoint.distanceTo(endPoint).toDouble()
-    }
+
 
 }
