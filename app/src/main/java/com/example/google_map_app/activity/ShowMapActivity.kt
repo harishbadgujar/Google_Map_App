@@ -25,7 +25,7 @@ class ShowMapActivity : AppCompatActivity() {
                     when {
                         PermissionUtils.isLocationEnabled(this) -> {
                            // startActivity(Intent(this@ShowMapActivity, MapsActivity::class.java))
-                            startActivity(Intent(this@ShowMapActivity, MainActivity::class.java))
+                            startActivity(Intent(this@ShowMapActivity, MapsActivity::class.java))
                             // setUpLocationListener()
                         }
                         else -> {
@@ -76,7 +76,7 @@ class ShowMapActivity : AppCompatActivity() {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     when {
                         PermissionUtils.isLocationEnabled(this) -> {
-                            startActivity(Intent(this@ShowMapActivity, MainActivity::class.java))
+                            startActivity(Intent(this@ShowMapActivity, MapsActivity::class.java))
                            // setUpLocationListener()
                         }
                         else -> {
