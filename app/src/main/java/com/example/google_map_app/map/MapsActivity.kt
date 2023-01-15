@@ -34,6 +34,7 @@ import java.util.*
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
+    //123
     private var geofenceArea: Circle? = null
     private var myLocationMarker: Marker? = null
     private lateinit var mMap: GoogleMap
